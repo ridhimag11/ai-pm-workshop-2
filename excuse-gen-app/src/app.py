@@ -235,15 +235,17 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
                     logger.info(f"Found JSON with pattern {pattern}: {json_str[:100]}...")
                     
                     # Clean up escaped characters
-                    json_str = json_str.replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'")
+                    json_str = json_str.replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
                     
                     try:
                         parsed = json.loads(json_str)
                         if "subject" in parsed and "body" in parsed:
+                            # Clean up the body text to remove any remaining escaped characters
+                            clean_body = parsed["body"].replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
                             logger.info(f"Successfully parsed JSON: subject='{parsed['subject']}'")
                             return ExcuseResponse(
                                 subject=parsed["subject"],
-                                body=parsed["body"],
+                                body=clean_body,
                                 success=True
                             )
                     except json.JSONDecodeError as e:
@@ -266,10 +268,12 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
                 try:
                     parsed = json.loads(json_str)
                     if "subject" in parsed and "body" in parsed:
+                        # Clean up the body text to remove any remaining escaped characters
+                        clean_body = parsed["body"].replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
                         logger.info(f"Successfully parsed general JSON: subject='{parsed['subject']}'")
                         return ExcuseResponse(
                             subject=parsed["subject"],
-                            body=parsed["body"],
+                            body=clean_body,
                             success=True
                         )
                 except json.JSONDecodeError as e:
@@ -280,10 +284,12 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
         try:
             parsed = json.loads(content.strip())
             if isinstance(parsed, dict) and "subject" in parsed and "body" in parsed:
+                # Clean up the body text to remove any remaining escaped characters
+                clean_body = parsed["body"].replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
                 logger.info(f"Successfully parsed entire content as JSON: subject='{parsed['subject']}'")
                 return ExcuseResponse(
                     subject=parsed["subject"],
-                    body=parsed["body"],
+                    body=clean_body,
                     success=True
                 )
         except json.JSONDecodeError:
@@ -295,7 +301,7 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
         
         if subject_match and body_match:
             subject = subject_match.group(1)
-            body = body_match.group(1).replace('\\n', '\n')
+            body = body_match.group(1).replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
             logger.info(f"Extracted subject and body from text patterns: subject='{subject}'")
             return ExcuseResponse(
                 subject=subject,
