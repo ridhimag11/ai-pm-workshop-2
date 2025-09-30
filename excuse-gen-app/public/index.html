@@ -146,7 +146,8 @@
             const copyToClipboard = async () => {
                 if (!generatedEmail) return;
 
-                const emailText = `Subject: ${generatedEmail.subject}\n\n${generatedEmail.body}`;
+                const cleanBody = generatedEmail.body ? generatedEmail.body.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\') : '';
+                const emailText = `Subject: ${generatedEmail.subject}\n\n${cleanBody}`;
                 
                 try {
                     await navigator.clipboard.writeText(emailText);
@@ -389,7 +390,7 @@
                                             </label>
                                             <div className="p-4 bg-gray-50 border rounded-md">
                                                 <pre className="whitespace-pre-wrap text-sm text-gray-900 font-sans">
-                                                    {generatedEmail.body}
+                                                    {generatedEmail.body ? generatedEmail.body.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\') : ''}
                                                 </pre>
                                             </div>
                                         </div>
