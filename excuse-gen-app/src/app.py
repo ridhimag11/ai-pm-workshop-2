@@ -240,8 +240,16 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
                     try:
                         parsed = json.loads(json_str)
                         if "subject" in parsed and "body" in parsed:
-                            # Clean up the body text to remove any remaining escaped characters
+                            # Clean up the body text to remove any remaining escaped characters and markdown
                             clean_body = parsed["body"].replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
+                            # Remove markdown formatting
+                            import re
+                            clean_body = re.sub(r'```[^`]*```', '', clean_body)  # Remove code blocks
+                            clean_body = re.sub(r'`([^`]+)`', r'\1', clean_body)  # Remove inline code
+                            clean_body = re.sub(r'\*\*([^*]+)\*\*', r'\1', clean_body)  # Remove bold
+                            clean_body = re.sub(r'\*([^*]+)\*', r'\1', clean_body)  # Remove italic
+                            clean_body = re.sub(r'#{1,6}\s*', '', clean_body)  # Remove headers
+                            clean_body = clean_body.strip()
                             logger.info(f"Successfully parsed JSON: subject='{parsed['subject']}'")
                             return ExcuseResponse(
                                 subject=parsed["subject"],
@@ -268,8 +276,16 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
                 try:
                     parsed = json.loads(json_str)
                     if "subject" in parsed and "body" in parsed:
-                        # Clean up the body text to remove any remaining escaped characters
+                        # Clean up the body text to remove any remaining escaped characters and markdown
                         clean_body = parsed["body"].replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
+                        # Remove markdown formatting
+                        import re
+                        clean_body = re.sub(r'```[^`]*```', '', clean_body)  # Remove code blocks
+                        clean_body = re.sub(r'`([^`]+)`', r'\1', clean_body)  # Remove inline code
+                        clean_body = re.sub(r'\*\*([^*]+)\*\*', r'\1', clean_body)  # Remove bold
+                        clean_body = re.sub(r'\*([^*]+)\*', r'\1', clean_body)  # Remove italic
+                        clean_body = re.sub(r'#{1,6}\s*', '', clean_body)  # Remove headers
+                        clean_body = clean_body.strip()
                         logger.info(f"Successfully parsed general JSON: subject='{parsed['subject']}'")
                         return ExcuseResponse(
                             subject=parsed["subject"],
@@ -284,8 +300,16 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
         try:
             parsed = json.loads(content.strip())
             if isinstance(parsed, dict) and "subject" in parsed and "body" in parsed:
-                # Clean up the body text to remove any remaining escaped characters
+                # Clean up the body text to remove any remaining escaped characters and markdown
                 clean_body = parsed["body"].replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
+                # Remove markdown formatting
+                import re
+                clean_body = re.sub(r'```[^`]*```', '', clean_body)  # Remove code blocks
+                clean_body = re.sub(r'`([^`]+)`', r'\1', clean_body)  # Remove inline code
+                clean_body = re.sub(r'\*\*([^*]+)\*\*', r'\1', clean_body)  # Remove bold
+                clean_body = re.sub(r'\*([^*]+)\*', r'\1', clean_body)  # Remove italic
+                clean_body = re.sub(r'#{1,6}\s*', '', clean_body)  # Remove headers
+                clean_body = clean_body.strip()
                 logger.info(f"Successfully parsed entire content as JSON: subject='{parsed['subject']}'")
                 return ExcuseResponse(
                     subject=parsed["subject"],
@@ -302,6 +326,14 @@ def parse_llm_response(response: Dict[str, Any]) -> ExcuseResponse:
         if subject_match and body_match:
             subject = subject_match.group(1)
             body = body_match.group(1).replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
+            # Remove markdown formatting
+            import re
+            body = re.sub(r'```[^`]*```', '', body)  # Remove code blocks
+            body = re.sub(r'`([^`]+)`', r'\1', body)  # Remove inline code
+            body = re.sub(r'\*\*([^*]+)\*\*', r'\1', body)  # Remove bold
+            body = re.sub(r'\*([^*]+)\*', r'\1', body)  # Remove italic
+            body = re.sub(r'#{1,6}\s*', '', body)  # Remove headers
+            body = body.strip()
             logger.info(f"Extracted subject and body from text patterns: subject='{subject}'")
             return ExcuseResponse(
                 subject=subject,

@@ -146,7 +146,16 @@
             const copyToClipboard = async () => {
                 if (!generatedEmail) return;
 
-                const cleanBody = generatedEmail.body ? generatedEmail.body.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\') : '';
+                const cleanBody = generatedEmail.body ? (() => {
+                    let clean = generatedEmail.body.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+                    // Remove markdown formatting
+                    clean = clean.replace(/```[^`]*```/g, ''); // Remove code blocks
+                    clean = clean.replace(/`([^`]+)`/g, '$1'); // Remove inline code
+                    clean = clean.replace(/\*\*([^*]+)\*\*/g, '$1'); // Remove bold
+                    clean = clean.replace(/\*([^*]+)\*/g, '$1'); // Remove italic
+                    clean = clean.replace(/#{1,6}\s*/g, ''); // Remove headers
+                    return clean.trim();
+                })() : '';
                 const emailText = `Subject: ${generatedEmail.subject}\n\n${cleanBody}`;
                 
                 try {
@@ -390,7 +399,16 @@
                                             </label>
                                             <div className="p-4 bg-gray-50 border rounded-md">
                                                 <pre className="whitespace-pre-wrap text-sm text-gray-900 font-sans">
-                                                    {generatedEmail.body ? generatedEmail.body.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\') : ''}
+                                                    {generatedEmail.body ? (() => {
+                                                        let cleanBody = generatedEmail.body.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+                                                        // Remove markdown formatting
+                                                        cleanBody = cleanBody.replace(/```[^`]*```/g, ''); // Remove code blocks
+                                                        cleanBody = cleanBody.replace(/`([^`]+)`/g, '$1'); // Remove inline code
+                                                        cleanBody = cleanBody.replace(/\*\*([^*]+)\*\*/g, '$1'); // Remove bold
+                                                        cleanBody = cleanBody.replace(/\*([^*]+)\*/g, '$1'); // Remove italic
+                                                        cleanBody = cleanBody.replace(/#{1,6}\s*/g, ''); // Remove headers
+                                                        return cleanBody.trim();
+                                                    })() : ''}
                                                 </pre>
                                             </div>
                                         </div>
